@@ -103,6 +103,7 @@ option选项包含：
 ### Stage.addModel(option)
 添加一个模型，返回一个对象节点（Konva.Group对象）
 option选项包含：
+```
  {
       uid: string 模型唯一ID（没有则自动生成）
       x: number X坐标
@@ -119,6 +120,7 @@ option选项包含：
         }
       ]
  }
+```
 
   示例
 ```
@@ -158,11 +160,13 @@ option选项包含：
 ### Stage.addLine(option)
 添加一个连线，返回一个对象节点（Konva.Line对象）
 option选项包含：
+```
   {
      start: konva.Group  起始端口（必须是outport类型）
      end: konva.Group 终止端口（必须是inport类型）
      points: array[number] 连线的坐标点数组（共4个坐标点，连线为贝塞尔曲线，2个顶点 + 2个控制点），如果不提供则自动根据端口生成
   }
+```
 
   示例
 ```
