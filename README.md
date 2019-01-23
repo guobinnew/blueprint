@@ -110,6 +110,7 @@ option选项包含：
       y: number Y坐标
       title: string 模型标题
       name: string 模型ID名
+      version: string 模型版本
       ports: [ 端口列表
         {
           orientation: in | out  端口方向
@@ -117,6 +118,7 @@ option选项包含：
           name: string 端口ID
           title: string 端口标题
           dataType: string 数据类型
+          version: string 数据类型版本
         }
       ]
  }
@@ -239,7 +241,13 @@ JSON格式示例：
 ### Stage.clear(cache = true)
 清空编辑区, 其中cache参数用于控制是否清除Undo缓存，默认为true
 
+### Stage.autoLink()
+自动实现端口连线，连线条件必须是端口名+数据类型+版本完全一致
+
 ## Demo
 在工程demo目录下，有简单的使用Demo代码（基于Vue）
 
 ![image](https://github.com/guobinnew/blueprint/blob/master/screenshots/demo.png?raw=true)
+
+## Release Note
+v1.1 增加模型版本属性，端口自动连线

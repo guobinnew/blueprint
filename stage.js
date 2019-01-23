@@ -1,6 +1,7 @@
 import konva from 'konva'
 import uniqid from 'uniqid'
 var  _  = require('lodash')
+var stringhash = require('string-hash')
 
 /**
  * 编辑面板
@@ -66,32 +67,34 @@ class Stage {
     this.actionIndex = -1
 
     // 鼠标事件
+    let stage = this
     this.stage.on('mousedown', (evt) => {
       let shape = evt.target
       // 如果点击编辑器空白区，则取消选中状态
       if (shape instanceof konva.Stage) {
-        if (this.selectedLine) {
+        if (stage.selectedLine) {
           let mod = this.selectedLine.getAttr('linkmod')
           if (mod) {
-            this.snapshot()
-            this.selectedLine.setAttr('linkmod', false)
+            stage.snapshot()
+            stage.selectedLine.setAttr('linkmod', false)
           }
-          this.hideAnchor()
-          this.selectedLine = null
+          stage.hideAnchor()
+          stage.selectedLine = null
         }
 
         // 如果是连线状态，取消连线
-        if (this.isLinking) {
-          this.tempLine.setAttr('visible', false)
-          this.isLinking = false
-          this.linePorts = []
+        if (stage.isLinking) {
+          stage.tempLine.setAttr('visible', false)
+          stage.isLinking = false
+          stage.linePorts = []
         }
 
+        stage.layers.link.draw()
         return
       }
 
       // 判断是否为Group
-      let group = this.findGroupParent(shape, 'model')
+      let group = stage.findGroupParent(shape, 'model')
       if (group) {
         // 判断是否为端口
         if (shape.hasName('modelinport') || shape.hasName('modeloutport')) {
@@ -106,16 +109,16 @@ class Stage {
     })
 
     this.stage.on('mousemove', (evt) => {
-      this.mousePos = this.stage.getPointerPosition();
-      if (this.isLinking) {
+      stage.mousePos = stage.stage.getPointerPosition();
+      if (stage.isLinking) {
         // 更新临时连线
-        this.updateTempLine()
-        this.layers.link.draw()
+        stage.updateTempLine()
+        stage.layers.link.draw()
       }
     })
 
     this.stage.on('dragstart', (evt) => {
-      if (this.isLinking) {
+      if (stage.isLinking) {
         return
       }
       let target = evt.target
@@ -125,7 +128,7 @@ class Stage {
     });
 
     this.stage.on('dragmove', (evt) => {
-      if (this.isLinking) {
+      if (stage.isLinking) {
         return
       }
 
@@ -136,11 +139,11 @@ class Stage {
         let inports = group.find('.modelinport')
         inports.each((shape) => {
           let links = shape.getAttr('linkids')
-          let pos = shape.getAbsolutePosition(this.stage)
+          let pos = shape.getAbsolutePosition(stage.stage)
 
           if (links && links.length > 0) {
             for (let lid of links) {
-              let link = this.layers.link.find('#' + lid)[0]
+              let link = stage.layers.link.find('#' + lid)[0]
               let oldpt = link.getAttr('points').slice(-2)
               let dx = pos.x - oldpt[0]
               let dy = pos.y - oldpt[1]
@@ -153,10 +156,10 @@ class Stage {
               link.setAttr('points', pts)
 
               // 更新锚点
-              if (this.selectedLine && link === this.selectedLine) {
-                this.anchors[0].setAttr('points', pts)
-                this.anchors[2].setAttr('x', this.anchors[2].attrs.x + dx)
-                this.anchors[2].setAttr('y', this.anchors[2].attrs.y + dy)
+              if (stage.selectedLine && link === stage.selectedLine) {
+                stage.anchors[0].setAttr('points', pts)
+                stage.anchors[2].setAttr('x', stage.anchors[2].attrs.x + dx)
+                stage.anchors[2].setAttr('y', stage.anchors[2].attrs.y + dy)
               }
             }
           }
@@ -165,11 +168,11 @@ class Stage {
         let outports = group.find('.modeloutport')
         outports.each( (shape) => {
           let links = shape.getAttr('linkids')
-          let pos = shape.getAbsolutePosition(this.stage)
+          let pos = shape.getAbsolutePosition(stage.stage)
 
           if (links && links.length > 0) {
             for (let lid of links) {
-              let link = this.layers.link.find('#' + lid)[0]
+              let link = stage.layers.link.find('#' + lid)[0]
               let oldpt = link.getAttr('points').slice(0, 2)
               let dx = pos.x - oldpt[0]
               let dy = pos.y - oldpt[1]
@@ -179,26 +182,26 @@ class Stage {
               pts.splice(0, 0, pos.x, pos.y)
               link.setAttr('points', pts)
               // 更新锚点
-              if (this.selectedLine && link === this.selectedLine) {
-                this.anchors[0].setAttr('points', pts)
-                this.anchors[1].setAttr('x', this.anchors[1].attrs.x + dx)
-                this.anchors[1].setAttr('y', this.anchors[1].attrs.y + dy)
+              if (stage.selectedLine && link === stage.selectedLine) {
+                stage.anchors[0].setAttr('points', pts)
+                stage.anchors[1].setAttr('x', stage.anchors[1].attrs.x + dx)
+                stage.anchors[1].setAttr('y', stage.anchors[1].attrs.y + dy)
               }
             }
           }
         })
 
-        this.layers.link.batchDraw()
+        stage.layers.link.batchDraw()
       }
     })
 
     this.stage.on('dragend', (evt) => {
-      if (this.isLinking) {
+      if (stage.isLinking) {
         return
       }
       let target = evt.target
       if (target instanceof konva.Group) {
-        this.snapshot()
+        stage.snapshot()
       }
     })
   }
@@ -352,9 +355,10 @@ class Stage {
    * @param line
    */
   buildLineAnchor(line) {
+    let stage = this
+    let pts = line.points()
 
-    let pts = line.getAttr('points')
-
+    // 辅助线
     let anchorline = new konva.Line({
       dash: [10, 10, 0, 10],
       strokeWidth: 2,
@@ -363,7 +367,6 @@ class Stage {
       id: 'anchorline',
       points: pts.slice()
     })
-
     this.anchors.push(anchorline)
     this.layers.link.add(anchorline)
 
@@ -376,15 +379,35 @@ class Stage {
     a2.setAttr('linkid', line.id())
     a2.setAttr('linktype', 'end')
 
+    // 显示删除按钮
+    let close = this.buildCloseButton({
+      x: (pts[2] + pts[4])/ 2,
+      y: (pts[3] + pts[5])/ 2,
+      size: 12,
+      background: '#406b95',
+      uid: line.id(),
+      action: function (evt) {
+        // 删除连线
+        let group = stage.findGroupParent(evt.target, 'modelclose')
+        let pid = group.getAttr('pid')
+        stage.removeLink(pid)
+        stage.layers.link.draw()
+        stage.snapshot()
+      }
+    })
+    this.anchors.push(close)
+    this.layers.link.add(close)
   }
 
   /**
    *
    */
   hideAnchor() {
-    this.anchors[0].destroy()
-    this.anchors[1].destroy()
-    this.anchors[2].destroy()
+    for(let a of this.anchors){
+      if(a){
+        a.destroy()
+      }
+    }
     this.anchors = []
   }
 
@@ -405,6 +428,31 @@ class Stage {
     })
   }
 
+  /**
+   * 判断是否已经存在连线
+   * @param start
+   * @param end
+   */
+  hasLink(start, end){
+    if (!start || !end){
+      console.error('blueprint error: Stage.hasLink() param is null')
+      return false
+    }
+
+    let startlinks = start.getAttr('linkids')
+    if (!startlinks || startlinks.length === 0) {
+      return false
+    }
+
+    let endlinks = end.getAttr('linkids')
+    if (!endlinks || endlinks.length === 0) {
+      return false
+    }
+
+    // 检测是否有交集
+    let ids = _.intersection(startlinks, endlinks)
+    return ids.length > 0
+  }
   /**
    * 添加连线
    * @param config
@@ -515,6 +563,15 @@ class Stage {
 
   /**
    * 创建close按钮
+   * @param opt
+   * {
+   *   uid:
+   *   x:
+   *   y:
+   *   size:
+   *   background:
+   *   action:
+   * }
    */
   buildCloseButton(opt){
     // 删除按钮
@@ -529,13 +586,14 @@ class Stage {
       x: 0,
       y: 0,
       radius: opt.size / 2,
-      fill: 'transparent',
-      stroke: 'transparent'
+      fill: opt.background ? opt.background : 'transparent',
+      stroke: opt.background ? opt.background : 'transparent'
     })
     close.add(bg)
 
+    let lineRadius = opt.size / 2 - 2
     let hline = new konva.Line({
-      points: [-opt.size/2, 0, opt.size/2, 0],
+      points: [-lineRadius, 0, lineRadius, 0],
       stroke: '#ddd',
       strokeWidth: 2,
       lineCap: 'round',
@@ -544,7 +602,7 @@ class Stage {
     close.add(hline)
 
     let vline = new konva.Line({
-      points: [0, -opt.size/2, 0, opt.size/2],
+      points: [0, -lineRadius, 0, lineRadius],
       stroke: '#ddd',
       strokeWidth: 2,
       lineCap: 'round',
@@ -649,7 +707,7 @@ class Stage {
     let title = new konva.Text({
       x: 14,
       y: 12,
-      text: config.title,
+      text: config.title + (config.version ? '   ' + config.version : ''),
       fontSize: 14,
       fill: '#fff'
     })
@@ -667,12 +725,11 @@ class Stage {
 
     // 删除按钮
     let close = stage.buildCloseButton({
-      x: minWidth - 8,
+      x: minWidth - 10,
       y: 10,
-      size: 10,
+      size: 14,
       uid: cfg.uid,
       action: function (evt) {
-        console.log('close', evt.target)
         // 删除当前模型
         let group = stage.findGroupParent(evt.target, 'modelclose')
         let pid = group.getAttr('pid')
@@ -751,6 +808,11 @@ class Stage {
             return
           }
 
+          // 不能是同一个父模型
+          if( stage.findGroupParent(port, 'model') === stage.findGroupParent(stage.linePorts[0], 'model')){
+            return
+          }
+
           let start = null
           let end = null
 
@@ -760,6 +822,11 @@ class Stage {
           } else {
             start = port
             end = stage.linePorts[0]
+          }
+
+          // 不能重复添加
+          if(stage.hasLink(start, end)){
+            return
           }
 
           // 添加连线
@@ -795,6 +862,10 @@ class Stage {
         name: opt.orientation === 'in' ? 'modelinport' : 'modeloutport',
       })
       port.setAttr('portdef', opt)
+
+      // 计算端口类型hash
+      let hashstr = opt.name + opt.datatype + ( opt.version ? opt.version : '')
+      port.setAttr('hash', stringhash(hashstr))
 
       let portColor = opt.orientation === 'in' ? '#e17e1b' : '#00951b'
       let rect = new konva.Rect({
@@ -836,7 +907,7 @@ class Stage {
       let datatype = new konva.Text({
         x: 0,
         y: 0,
-        text: opt.datatype,
+        text: opt.datatype + ( opt.version ? '  ' + opt.version : ''),
         fontSize: 12,
         fill: '#333',
         visible: optionModel.showDataType
@@ -851,7 +922,7 @@ class Stage {
         })
 
         rect.position({
-          x: 2,
+          x: 1,
           y: -6
         })
 
@@ -871,7 +942,7 @@ class Stage {
         })
 
         rect.position({
-          x: -18,
+          x: -17,
           y: -6
         })
 
@@ -918,11 +989,11 @@ class Stage {
     let contentWidth = maxPortWidth.inport + maxPortWidth.outport + 60
     let maxWidth = Math.max(140, Math.max(headWidth, contentWidth))
 
-    // adjust
+    // 调整布局
     head.clipWidth(maxWidth + clipOffsetX * 2)
     headbg.width(maxWidth)
     close.position({
-      x: maxWidth - 8,
+      x: maxWidth - 10,
       y: 10
     })
 
@@ -951,8 +1022,12 @@ class Stage {
       offsety += 30
     }
 
+    group.inports = function(){
+      return this.find('.modelinport')
+    }
+
     group.inport = function(name){
-      let inps = this.find('.modelinport')
+      let inps = this.inports()
       for(let p of inps){
         let def = p.getAttr('portdef')
         if (def.name === name) {
@@ -962,8 +1037,12 @@ class Stage {
       return null
     }
 
+    group.outports = function(name) {
+      return this.find('.modeloutport')
+    }
+
     group.outport = function(name){
-      let outps = this.find('.modeloutport')
+      let outps = this.outports()
       for(let p of outps){
         let def = p.getAttr('portdef')
         if (def.name === name) {
@@ -972,6 +1051,7 @@ class Stage {
       }
       return null
     }
+
 
     stage.layers.model.add(group)
     stage.modelIndex[cfg.uid] = group
@@ -994,6 +1074,11 @@ class Stage {
     let l = this.linkIndex[lid]
     if (!l) {
       return
+    }
+
+    if(this.selectedLine === l){
+      this.hideAnchor()
+      this.selectedLine = null
     }
 
     const removeId = (attr) => {
@@ -1113,6 +1198,7 @@ class Stage {
     this.linePorts = []
     // 是否处于连线状态
     this.isLinking = false
+    this.hideAnchor()
 
     // 清除缓存
     if (cache) {
@@ -1130,6 +1216,8 @@ class Stage {
 
     this.modelIndex = {}
     this.linkIndex = {}
+
+    this.update()
   }
 
   /**
@@ -1247,6 +1335,73 @@ class Stage {
       // 加载之前缓冲（保留缓冲队列）
       this.loadFromJson(cache, false)
     }
+  }
+
+  /**
+   * 自动连线
+   * 必须端口名、数据类型+版本完全一致
+   */
+  autoLink(){
+    // 遍历模型
+    let ports = {}
+    for(let m of Object.values(this.modelIndex)){
+      // 检测每个模型的输出
+      let outports = m.outports()
+      for (let p of outports) {
+        let hash = p.getAttr('hash')
+        if (!ports[hash]){
+          ports[hash] = {
+            in: [],
+            out: []
+          }
+        }
+        ports[hash].out.push(p)
+      }
+
+      let inports = m.inports()
+      for (let p of inports) {
+        let hash = p.getAttr('hash')
+        if (!ports[hash]){
+          ports[hash] = {
+            in: [],
+            out: []
+          }
+        }
+        ports[hash].in.push(p)
+      }
+    }
+
+    let modified = false
+    for(let p of Object.values(ports)){
+      // 添加连接
+      if (p.in.length === 0 || p.out.length === 0){
+        continue
+      }
+
+      // 全连接
+      for( let start of p.out){
+        for( let end of p.in) {
+          // 不能是同一个父模型
+          if( this.findGroupParent(start, 'model') === this.findGroupParent(end, 'model')){
+            continue
+          }
+
+          // 不能重复添加
+          if(this.hasLink(start, end)){
+            continue
+          }
+
+          modified = true
+          this.addLink({
+            start: start,
+            end: end
+          })
+        }
+      }
+    }
+
+    this.layers.link.draw()
+    modified && this.snapshot()
 
   }
 

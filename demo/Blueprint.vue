@@ -12,6 +12,7 @@
                     <el-button type="primary" icon="el-icon-delete" @click="undo">撤销</el-button>
                     <el-button type="primary" icon="el-icon-delete" @click="redo">重做</el-button>
                     <el-button type="primary" icon="el-icon-delete" @click="clear">清空</el-button>
+                    <el-button type="primary" icon="el-icon-delete" @click="autoLink">自动连线</el-button>
                 </el-button-group>
             </el-row>
         </div>
@@ -37,7 +38,7 @@
         left: 0;
         overflow: visible;
         text-align: left;
-        margin-left: 300px;
+        margin-left: 100px;
         margin-top: 10px;
     }
 
@@ -45,7 +46,7 @@
 
 <script>
   import resize from 'vue-resize-directive'
-  import blueprint from 'orion-blueprint'
+  import Blueprint from '../components/blueprint/index'
 
   export default {
     data: function () {
@@ -64,6 +65,7 @@
       resize,
     },
     computed: {
+
     },
     methods: {
       onContainerResize() {
@@ -96,10 +98,14 @@
       clear(){
         this.scene.stage.clear()
       },
+      autoLink(){
+        this.scene.stage.autoLink()
+      },
       test(){
         let g1 = this.scene.stage.addModel({
           name: 'ComponentA',
           title: '组件A',
+          version: 'V1.0.0',
           x: 200,
           y: 200,
           ports: [
@@ -107,18 +113,28 @@
               orientation: 'in',
               external: true,
               name: 'LocationX',
-              datatype: 'float'
+              datatype: 'float',
+              version: 'V1'
             },
             {
               orientation: 'in',
               external: true,
               name: 'LocationY',
-              datatype: 'float'
+              datatype: 'float',
+              version: 'V2'
+            },
+            {
+              orientation: 'in',
+              external: true,
+              name: 'canNotify',
+              datatype: 'bool',
+              version: 'V2'
             },
             {
               orientation: 'out',
               name: 'Distance',
-              datatype: 'float'
+              datatype: 'float',
+              version: 'V1'
             }
           ]
         })
@@ -132,18 +148,21 @@
             {
               orientation: 'in',
               name: 'Distance',
-              datatype: 'float'
+              datatype: 'float',
+              version: 'V1'
             },
             {
               orientation: 'out',
               external: true,
               name: 'Time',
-              datatype: 'float'
+              datatype: 'float',
+              version: 'V3'
             },
             {
               orientation: 'out',
               name: 'canNotify',
-              datatype: 'bool'
+              datatype: 'bool',
+              version: 'V2'
             }
           ]
         })
@@ -163,8 +182,8 @@
       this.size.width = this.$el.clientWidth
       this.size.height = this.$el.clientHeight
 
-      this.scene.stage = blueprint.init({
-        container: 'scene',
+      this.scene.stage = Blueprint.init({
+        container: 'scene',    //container 用来容纳舞台的容器
         width: this.size.width,
         height: this.size.height
       })
