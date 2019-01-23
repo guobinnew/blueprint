@@ -235,7 +235,7 @@ JSON格式示例：
 ### Stage.clear(cache = true)
 清空编辑区, 其中cache参数用于控制是否清除Undo缓存，默认为true
 
-#Demo
+## Demo
 在工程demo目录下，有简单的使用Demo代码（基于Vue）
 
 ![image](https://github.com/guobinnew/blueprint/blob/master/screenshots/demo.png?raw=true)
