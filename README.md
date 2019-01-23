@@ -171,7 +171,7 @@ option选项包含：
   示例
 ```
    editor.addLink({
-       start: model1.outport('Distance')
+       start: model1.outport('Distance'),
        end: model2.inport('Distance')
    })
 ```
@@ -183,22 +183,22 @@ JSON格式示例：
 {
   models: [
     {
-      name: "ComponentA"
+      name: "ComponentA",
       ports: [
-       {orientation: "in", external: true, name: "LocationX", datatype: "float"}
-       {orientation: "in", external: true, name: "LocationY", datatype: "float"}
+       {orientation: "in", external: true, name: "LocationX", datatype: "float"},
+       {orientation: "in", external: true, name: "LocationY", datatype: "float"},
        {orientation: "out", name: "Distance", datatype: "float"}
-      ]
-      title: "组件A"
-      uid: "1jr8rp20d"
-      x: 162
+      ],
+      title: "组件A",
+      uid: "1jr8rp20d",
+      x: 162,
       y: 310
     }
   ],
   links: [
     {
-       end: {mid: "1jr8rp20f", port: "Distance"}
-       points: (8) [338.7373046875, 384, 438.7373046875, 384, 450, 217, 550, 217]
+       end: {mid: "1jr8rp20f", port: "Distance"},
+       points: [338.7373046875, 384, 438.7373046875, 384, 450, 217, 550, 217],
        start: {mid: "1jr8rp20d", port: "Distance"}
     }
   ]
