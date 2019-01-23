@@ -1,5 +1,5 @@
 {
-  "name": "blueprint",
+  "name": "orion-blueprint",
   "version": "1.0.0",
   "description": "based-canvas visual editor(using Konva)",
   "main": "index.js",

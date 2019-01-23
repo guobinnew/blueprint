@@ -45,7 +45,7 @@
 
 <script>
   import resize from 'vue-resize-directive'
-  import Blueprint from '../components/blueprint/index'
+  import blueprint from 'orion-blueprint'
 
   export default {
     data: function () {
@@ -163,8 +163,8 @@
       this.size.width = this.$el.clientWidth
       this.size.height = this.$el.clientHeight
 
-      this.scene.stage = Blueprint.init({
-        container: 'scene',    //container 用来容纳舞台的容器
+      this.scene.stage = blueprint.init({
+        container: 'scene',
         width: this.size.width,
         height: this.size.height
       })

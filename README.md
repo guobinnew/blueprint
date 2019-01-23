@@ -7,7 +7,7 @@
 ## 安装
 
 ```
-npm install blueprint
+npm install orion-blueprint
 ```
 
 ## Vue框架中使用
@@ -34,7 +34,7 @@ App.Vue
 </style>
 
 <script>
-import blueprint from "blueprint"
+import blueprint from "orion-blueprint"
 import resize from 'vue-resize-directive'
 
 export default {
