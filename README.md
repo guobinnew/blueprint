@@ -120,9 +120,57 @@ option选项包含：
       ]
  }
 
+  示例
+```
+   let model = this.scene.stage.addModel({
+            name: 'ComponentA',
+            title: '组件A',
+            x: 200,
+            y: 200,
+            ports: [
+              {
+                orientation: 'in',
+                external: true,
+                name: 'LocationX',
+                datatype: 'float'
+              },
+              {
+                orientation: 'in',
+                external: true,
+                name: 'LocationY',
+                datatype: 'float'
+              },
+              {
+                orientation: 'out',
+                name: 'Distance',
+                datatype: 'float'
+              }
+            ]
+          })
+```
+
+ 返回的Model对象，提供inport和outport函数来获取端口对象，使用方法如下：
+```
+  let o = g1.outport('Distance')
+  let i = g1.inport('LocationX')
+```
+
 ### Stage.addLine(option)
 添加一个连线，返回一个对象节点（Konva.Line对象）
+option选项包含：
+  {
+     start: konva.Group  起始端口（必须是outport类型）
+     end: konva.Group 终止端口（必须是inport类型）
+     points: array[number] 连线的坐标点数组（共4个坐标点，连线为贝塞尔曲线，2个顶点 + 2个控制点），如果不提供则自动根据端口生成
+  }
 
+  示例
+```
+   editor.addLink({
+       start: model1.outport('Distance')
+       end: model2.inport('Distance')
+   })
+```
 
 ### Stage.saveToJson()
 将编辑器内容保存为JSON对象
@@ -152,3 +200,42 @@ JSON格式示例：
   ]
 }
 ```
+
+  示例
+```
+   let cache = editor.saveToJson()
+```
+
+### Stage.loadFromJson(data, cache = true)
+加载JSON数据（由Stage.saveToJson()函数生成）, 其中cache参数用于控制是否清除Undo缓存，默认为true
+
+  示例
+```
+   editor.loadFromJson(cache)
+```
+
+### Stage.snapshot()
+生成编辑器内容快照，主要用于Undo/Redo
+
+### Stage.zoomIn()
+放大编辑区的缩放比例，最大为10倍
+
+### Stage.zoomOut()
+缩小编辑区的缩放比例，最小为1/10倍
+
+### Stage.reset()
+恢复编辑区的缩放比例和位置偏移（回到原点）
+
+### Stage.undo()
+撤销最近的一步操作
+
+### Stage.redo()
+重做上一次撤销的操作
+
+### Stage.clear(cache = true)
+清空编辑区, 其中cache参数用于控制是否清除Undo缓存，默认为true
+
+#Demo
+在工程demo目录下，有简单的使用Demo代码（基于Vue）
+
+![image](https://github.com/guobinnew/blueprint/blob/master/screenshots/demo.png?raw=true)

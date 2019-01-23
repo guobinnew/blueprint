@@ -408,6 +408,11 @@ class Stage {
   /**
    * 添加连线
    * @param config
+   * {
+   *   start: konva.Group  起始端口（必须是outport类型）
+   *   end: konva.Group 终止端口（必须是inport类型）
+   *   points: array[number] 连线的坐标点数组（共4个坐标点，连线为贝塞尔曲线，2个顶点 + 2个控制点）
+   * }
    * @returns {konva.Line}
    */
   addLink(config) {
@@ -433,7 +438,6 @@ class Stage {
       strokeWidth: 2,
       lineCap: 'round',
       lineJoin: 'round',
-      //tension : 0.5,
       bezier: true,
       id: lid
     })
