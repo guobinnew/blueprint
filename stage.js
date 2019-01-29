@@ -11,6 +11,7 @@ class Stage {
     this.options = {
       draggable: false,
       canZoom: true,
+      canWheelZoom: true,
       model: {
         portName: 'name',
         showDataType: true
@@ -115,6 +116,27 @@ class Stage {
         stage.updateTempLine()
         stage.layers.link.draw()
       }
+    })
+
+    this.stage.on('wheel', (evt) => {
+      if (!(this.options.canZoom && this.options.canWheelZoom)) {
+        return
+      }
+
+      let speed = 360
+      let multiple = Math.floor(evt.evt.wheelDelta / speed)
+      if (multiple === 0) {
+        return
+      }
+
+      if (multiple < 0) {
+        // 放大
+        this.zoom = _.clamp(this.zoom * Math.pow(this.zoomFactor, -multiple), this.minZoom, this.maxZoom)
+      } else if (multiple > 0) {
+        this.zoom = _.clamp(this.zoom / Math.pow(this.zoomFactor, multiple), this.minZoom, this.maxZoom)
+      }
+      this.stage.scale({x: this.zoom, y: this.zoom})
+      this.update()
     })
 
     this.stage.on('dragstart', (evt) => {
@@ -1182,6 +1204,27 @@ class Stage {
       x: 0,
       y: 0
     })
+    this.update()
+  }
+
+  /**
+   * 清除所有连线
+   */
+  clearLink(){
+    this.modified = true
+    // 当前选中连线
+    this.selectedLine = null
+    // 新连线端口
+    this.linePorts = []
+    // 是否处于连线状态
+    this.isLinking = false
+    this.hideAnchor()
+
+    for(let lid of Object.keys(this.linkIndex)){
+      this.removeLink(lid)
+    }
+    this.linkIndex = {}
+    this.snapshot()
     this.update()
   }
 

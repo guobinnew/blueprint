@@ -84,6 +84,7 @@ option选项包含：
       height: number canvas高度（必须有）
       draggable: boolean 是否允许内容拖放，默认false
       canZoom: boolean true 是否允许缩放，默认true
+      canWheelZoom: true // 是否允许滚轮缩放，默认true
       model:
       {
         portName: string 用于显示端口名称的字段，默认为'name'
@@ -243,6 +244,10 @@ JSON格式示例：
 
 ### Stage.autoLink()
 自动实现端口连线，连线条件必须是端口名+数据类型+版本完全一致
+
+### Stage.clearLink()
+清空所有连线
+
 
 ## Demo
 在工程demo目录下，有简单的使用Demo代码（基于Vue）
