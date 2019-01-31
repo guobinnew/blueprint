@@ -248,7 +248,6 @@ JSON格式示例：
 ### Stage.clearLink()
 清空所有连线
 
-
 ## Demo
 在工程demo目录下，有简单的使用Demo代码（基于Vue）
 
@@ -256,3 +255,4 @@ JSON格式示例：
 
 ## Release Note
 v1.1 增加模型版本属性，端口自动连线
+v1.1.1 增加clearLnk()，滚轮缩放控制功能
